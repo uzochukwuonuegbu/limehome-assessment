@@ -69,14 +69,29 @@ async function isBookingPossible(booking: Booking): Promise<bookingOutcome> {
     // check 3 : Unit is available for the check-in date
     let isUnitAvailableOnCheckInDate = await prisma.booking.findMany({
         where: {
-            AND: {
-                checkInDate: {
-                    equals: new Date(booking.checkInDate),
+            AND: [
+                {
+                    unitID: {
+                        equals: booking.unitID,
+                    },
                 },
-                unitID: {
-                    equals: booking.unitID,
-                }
-            }
+                {
+                    OR: [
+                        {
+                            checkInDate: {
+                                gte: new Date(booking.checkInDate), // Check if new booking starts after existing booking ends
+                                lte: new Date(new Date(booking.checkInDate).getTime() + (booking.numberOfNights * 24 * 60 * 60 * 1000)), // Check if new booking ends before existing booking starts
+                            },
+                        },
+                        {
+                            checkInDate: {
+                                lte: new Date(booking.checkInDate), // Check if new booking starts before existing booking ends
+                                gte: new Date(new Date(booking.checkInDate).getTime() - (booking.numberOfNights * 24 * 60 * 60 * 1000)), // Check if new booking ends after existing booking starts
+                            },
+                        },
+                    ],
+                },
+            ],
         }
     });
     if (isUnitAvailableOnCheckInDate.length > 0) {
