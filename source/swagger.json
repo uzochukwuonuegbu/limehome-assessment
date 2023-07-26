@@ -49,7 +49,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BookingInput"
+                  "$ref": "#/components/schemas/BookingExtensionInput"
                 }
               }
             },
@@ -120,6 +120,28 @@
         "BookingInput": {
           "type": "object",
           "properties": {
+            "guestName": {
+              "type": "string"
+            },
+            "unitID": {
+              "type": "string"
+            },
+            "checkInDate": {
+              "type": "string",
+              "format": "date"
+            },
+            "numberOfNights": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        },
+        "BookingExtensionInput": {
+          "type": "object",
+          "properties": {
+            "bookingId": {
+              "type": "int32"
+            },
             "guestName": {
               "type": "string"
             },
