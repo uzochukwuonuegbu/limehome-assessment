@@ -59,7 +59,6 @@ const extendBooking = async (req: Request, res: Response, next: NextFunction) =>
     // create new booking, update chain of bookings
     try {
         const newBooking = req.body; // Assuming the booking details are sent in the request body
-        console.log({ newBooking })
 
         const existingBooking = await findExistingBooking(newBooking.bookingId) as BookingModel;
 
@@ -69,8 +68,6 @@ const extendBooking = async (req: Request, res: Response, next: NextFunction) =>
         }
 
         const extensionOutcome = await isBookingExtensionPossible(newBooking);
-
-        console.log({ existingBooking, extensionOutcome })
         if (!extensionOutcome.result) {
             return res.status(400).json({ error: extensionOutcome.reason });
         }
@@ -202,7 +199,6 @@ async function isBookingExtensionPossible(booking: BookingModel): Promise<bookin
     }
 
     });
-    console.log({ isUnitAvailableOnCheckInDate })
     if (isUnitAvailableOnCheckInDate.length > 0) {
         return {result: false, reason: "For the given check-in date, the unit is already occupied"};
     }

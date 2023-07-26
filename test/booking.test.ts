@@ -150,7 +150,6 @@ describe('Booking API', () => {
     test('Create booking extension', async () => {
         const bookingResponse = await axios.post('http://localhost:8000/api/v1/booking', GUEST_A_UNIT_1);
 
-        console.log({ initialBooking: bookingResponse.data })
         expect(bookingResponse.status).toBe(200);
         expect(bookingResponse.data.guestName).toBe(GUEST_A_UNIT_1.guestName);
         expect(bookingResponse.data.unitID).toBe(GUEST_A_UNIT_1.unitID);
