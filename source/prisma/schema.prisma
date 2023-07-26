@@ -13,4 +13,7 @@ model Booking {
   unitID         String
   checkInDate    DateTime
   numberOfNights Int
+  firstBookingId       Int?     // Nullable field to store the ID of the first booking in the chain
+  previousBookingId    Int?     // Nullable field to link to the previous booking
+  nextBookingId        Int?     // Nullable field to link to the next booking
 }
