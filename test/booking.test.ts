@@ -23,6 +23,20 @@ const GUEST_B_UNIT_1 = {
     numberOfNights: 5,
 };
 
+const GUEST_A_UNIT_1_EXTENSION = {
+    unitID: '1',
+    guestName: 'GuestA',
+    checkInDate: new Date(new Date().getTime() + (6 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0],
+    numberOfNights: 3,
+};
+
+const GUEST_A_UNIT_2_EXTENSION = {
+    unitID: '2',
+    guestName: 'GuestA',
+    checkInDate: new Date(new Date().getTime() + (6 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0],
+    numberOfNights: 5,
+};
+
 const prisma = new PrismaClient();
 
 beforeEach(async () => {
@@ -117,14 +131,34 @@ describe('Booking API', () => {
         expect(response1.data.guestName).toBe(GUEST_A_UNIT_1.guestName);
 
         // GuestB trying to book a unit that is already occupied
-        const response2 = await axios.post('http://localhost:8000/api/v1/booking', {
-            unitID: '1',
-            guestName: 'GuestB',
-            checkInDate: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            numberOfNights: 5
-        });
+        let error: any;
+        try {
+            await axios.post('http://localhost:8000/api/v1/booking', {
+                unitID: '1',
+                guestName: 'GuestB',
+                checkInDate: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                numberOfNights: 5
+            });
+        } catch (e) {
+            error = e;
+        }
 
-        expect(response2.status).toBe(400);
-        expect(response2.data.detail).toBe('For the given check-in date, the unit is already occupied');
+        expect(error.response.status).toBe(400);
+        expect(error.response.data).toBe('For the given check-in date, the unit is already occupied');
+    });
+
+    test('Create booking extension', async () => {
+        const bookingResponse = await axios.post('http://localhost:8000/api/v1/booking', GUEST_A_UNIT_1);
+
+        console.log({ initialBooking: bookingResponse.data })
+        expect(bookingResponse.status).toBe(200);
+        expect(bookingResponse.data.guestName).toBe(GUEST_A_UNIT_1.guestName);
+        expect(bookingResponse.data.unitID).toBe(GUEST_A_UNIT_1.unitID);
+        expect(bookingResponse.data.numberOfNights).toBe(GUEST_A_UNIT_1.numberOfNights);
+
+        const res = await axios.post('http://localhost:8000/api/v1/booking/extend', { ...GUEST_A_UNIT_1_EXTENSION, bookingId: bookingResponse.data.id });
+
+        expect(res.status).toBe(200);
+        expect(res.data.previousBookingId).toBe(bookingResponse.data.id);
     });
 });
