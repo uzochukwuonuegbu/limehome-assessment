@@ -160,4 +160,54 @@ describe('Booking API', () => {
         expect(res.status).toBe(200);
         expect(res.data.previousBookingId).toBe(bookingResponse.data.id);
     });
+
+    test('Extend a booking that does not exist', async () => {
+        const nonExistentBookingId = 9999; // Assume a non-existent booking ID
+        let error: any;
+        try {
+            await axios.post('http://localhost:8000/api/v1/booking/extend', {
+                ...GUEST_A_UNIT_1_EXTENSION,
+                bookingId: nonExistentBookingId,
+            });
+        } catch (e) {
+            error = e;
+        }
+
+        expect(error).toBeInstanceOf(AxiosError);
+        expect(error.response.status).toBe(400);
+        expect(error.response.data).toEqual({ error: 'Booking with ID not found' });
+    });
+
+    test('Extend a booking with an already occupied unit', async () => {
+        // Create a booking
+        const response1 = await axios.post('http://localhost:8000/api/v1/booking', GUEST_A_UNIT_1);
+        expect(response1.status).toBe(200);
+
+        // Extend the booking with overlapping dates and the same unit
+        let error: any;
+        try {
+            await axios.post('http://localhost:8000/api/v1/booking/extend', {
+                ...GUEST_B_UNIT_1, // Use the same unit as the previous booking
+                bookingId: response1.data.id,
+            });
+        } catch (e) {
+            error = e;
+        }
+
+        expect(error).toBeInstanceOf(AxiosError);
+        expect(error.response.status).toBe(400);
+        expect(error.response.data).toEqual({ error: 'For the given check-in date, the unit is already occupied' });
+    });
+
+    test('Extend a booking with a different unit', async () => {
+        const response1 = await axios.post('http://localhost:8000/api/v1/booking', GUEST_A_UNIT_1);
+        expect(response1.status).toBe(200);
+
+        const res = await axios.post('http://localhost:8000/api/v1/booking/extend', {
+                ...GUEST_A_UNIT_2, // Use a different unit
+                bookingId: response1.data.id,
+            });
+        expect(res.status).toBe(200);
+        expect(res.data.previousBookingId).toBe(response1.data.id);
+    });
 });
