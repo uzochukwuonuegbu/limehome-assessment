@@ -140,7 +140,8 @@
           "type": "object",
           "properties": {
             "bookingId": {
-              "type": "int32"
+              "type": "integer",
+              "format": "int32"
             },
             "guestName": {
               "type": "string"
